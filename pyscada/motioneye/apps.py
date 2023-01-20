@@ -5,7 +5,7 @@ import os
 from django.apps import AppConfig
 from django.utils.translation import ugettext_lazy as _
 
-import config
+from . import config
 
 
 class PyScadaMotionEyeConfig(AppConfig):
@@ -15,4 +15,4 @@ class PyScadaMotionEyeConfig(AppConfig):
     default_auto_field = 'django.db.models.AutoField'
 
     def ready(self):
-        import signals
+        from . import signals

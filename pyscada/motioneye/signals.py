@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from pyscada.models import Device, Variable
-from models import MotionEyeServer, MotionEyeDevice, MotionEyeVariable, ExtendedMotionEyeDevice, \
+from .models import MotionEyeServer, MotionEyeDevice, MotionEyeVariable, ExtendedMotionEyeDevice, \
     ExtendedMotionEyeVariable
 
 from django.dispatch import receiver

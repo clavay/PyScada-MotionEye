@@ -2,8 +2,9 @@
 from __future__ import unicode_literals
 
 from . import PROTOCOL_ID
-from models import MotionEyeDevice, ExtendedMotionEyeDevice
-from models import MotionEyeVariable, ExtendedMotionEyeVariable
+from .models import MotionEyeServer
+from .models import MotionEyeDevice, ExtendedMotionEyeDevice
+from .models import MotionEyeVariable, ExtendedMotionEyeVariable
 from pyscada.admin import DeviceAdmin
 from pyscada.admin import VariableAdmin
 from pyscada.admin import admin_site
@@ -14,7 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MotionEyeAdminInline(admin.StackedInline):
+class MotionEyeDeviceAdminInline(admin.StackedInline):
     model = MotionEyeDevice
 
 
@@ -61,3 +62,4 @@ class MotionEyeVariableAdmin(VariableAdmin):
 
 # admin_site.register(ExtendedMotionEyeDevice, MotionEyeDeviceAdmin)
 # admin_site.register(ExtendedMotionEyeVariable, MotionEyeVariableAdmin)
+admin_site.register(MotionEyeServer)

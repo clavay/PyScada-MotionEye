@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from time import time, sleep
-from devices import GenericDevice
+from .devices import GenericDevice
 
 import sys
 
@@ -25,7 +25,8 @@ class Device:
         self.variables = {}
         self.device = device
         try:
-            if self.device.motioneyedevice.instrument_handler is not None \
+            if hasattr(self.device.motioneyedevice, 'instrument_handler') \
+                    and self.device.motioneyedevice.instrument_handler is not None \
                     and self.device.motioneyedevice.instrument_handler.handler_path is not None:
                 sys.path.append(self.device.motioneyedevice.instrument_handler.handler_path)
                 mod = __import__(self.device.motioneyedevice.instrument_handler.handler_class, fromlist=['Handler'])
@@ -44,7 +45,7 @@ class Device:
             self.variables[var.pk] = var
 
         if driver_ok and self.driver_handler_ok:
-            logger.error("motioneye connect")
+            #logger.error("motioneye connect")
             if not self._h.connect():
                 sleep(60)
                 self._h.connect()
@@ -58,11 +59,7 @@ class Device:
         if driver_ok and self.driver_handler_ok and self._h.inst is None:
             self._h.connect()
 
-        for item in self.variables.values():
-            value = self._h.read_data(item)
-
-            if value is not None and item.update_value(value, time()):
-                output.append(item.create_recorded_data_element())
+        output = self._h.read_data_all(self.variables)
 
         return output
 
@@ -76,7 +73,7 @@ class Device:
             return output
         if driver_ok and self.driver_handler_ok and self._h.inst is None:
             self._h.connect()
-            
+
         for item in self.variables:
             if self.variables[item].id == variable_id:
                 if not self.variables[item].writeable:

@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from pyscada.utils.scheduler import SingleDeviceDAQProcessWorker
 from . import PROTOCOL_ID
-import config
+from . import config
 
 import logging
 
