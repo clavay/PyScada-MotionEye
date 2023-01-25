@@ -69,7 +69,10 @@ class MotionEyeVariable(models.Model):
                                ('preset8', 'Preset8'),
                                ('preset9', 'Preset9'),
                                ('record_start', 'Record start'),
-                               ('record_stop', 'Record stop'),)
+                               ('record_stop', 'Record stop'),
+                               ('eventstart', 'Event start'),
+                               ('eventend', 'Event stop'),
+                               )
 
     service_other_choices = (
                        # Text overlay : 'timestamp', 'camera-name', 'custom-text', 'disabled'
@@ -89,14 +92,16 @@ class MotionEyeVariable(models.Model):
     protocol_id = PROTOCOL_ID
 
     # increment this list
-    service_not_boolean = {'(left|right)_text': {0: ['timestamp', 'Timestamp'],
-                                                 1: ['camera-name', 'Camera name'],
+    service_not_boolean = {'boolean': {0: ['False', 'False'],
+                                       1: ['True', 'True']},
+                           '(left|right)_text': {2: ['timestamp', 'Timestamp'],
+                                                 3: ['camera-name', 'Camera name'],
                                                  # use variable property to store custom text
-                                                 2: ['custom-text', 'Custom text'],
-                                                 4: ['disabled', 'Disabled'],
+                                                 4: ['custom-text', 'Custom text'],
+                                                 5: ['disabled', 'Disabled'],
                                                  },
-                           'recording_mode': {5: ['motion-triggered', 'Motion triggered'],
-                                              6: ['continuous', 'Continuous'],
+                           'recording_mode': {6: ['motion-triggered', 'Motion triggered'],
+                                              7: ['continuous', 'Continuous'],
                                               }
                            }
 
@@ -111,18 +116,19 @@ class MotionEyeVariable(models.Model):
         for field in self.service_not_boolean:
             if re.compile(field, re.IGNORECASE).match(self.service):
             #if field in self.service:
-                try:
-                    Dictionary.objects.get(name='MotionEye_non_boolean_services')
-                except Dictionary.DoesNotExist:
-                    d = Dictionary(name='MotionEye_non_boolean_services')
-                    d.save()
+                d, created = Dictionary.objects.get_or_create(name='MotionEye_non_boolean_services')
                 for i in self.service_not_boolean[field]:
-                    d.append(self.service_not_boolean[field][i][1], i)
+                    d.append(self.service_not_boolean[field][i][1], i, True)
 
         if d is not None:
-            self.motioneye_variable.dictionary = d
             self.motioneye_variable.value_class = 'INT16'
+        else:
+            d, created = Dictionary.objects.get_or_create(name='MotionEye_non_boolean_services')
+            field = 'boolean'
+            for i in self.service_not_boolean[field]:
+                d.append(self.service_not_boolean[field][i][1], i, True)
 
+        self.motioneye_variable.dictionary = d
         super().save(*args, **kwargs)
         self.motioneye_variable.save()
 
@@ -136,7 +142,7 @@ class MotionEyeVariable(models.Model):
     def validate_unique(self, exclude=None):
         qs = MotionEyeVariable.objects.filter(service=self.service,
                                               motioneye_variable__device=self.motioneye_variable.device,
-                                              )
+                                              ).exclude(id=self.id)
         if len(qs):
             raise ValidationError('This service already exist for this device.')
         super().validate_unique(exclude=exclude)

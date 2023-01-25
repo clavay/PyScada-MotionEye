@@ -44,11 +44,11 @@ class Device:
                 continue
             self.variables[var.pk] = var
 
-        if driver_ok and self.driver_handler_ok:
+        #if driver_ok and self.driver_handler_ok:
             #logger.error("motioneye connect")
-            if not self._h.connect():
-                sleep(60)
-                self._h.connect()
+        #    if not self._h.connect():
+        #        sleep(60)
+        #        self._h.connect()
 
     def request_data(self):
 
@@ -56,8 +56,8 @@ class Device:
 
         if not driver_ok or not self.driver_handler_ok:
             return output
-        if driver_ok and self.driver_handler_ok and self._h.inst is None:
-            self._h.connect()
+        #if driver_ok and self.driver_handler_ok and self._h.inst is None:
+        #    self._h.connect()
 
         output = self._h.read_data_all(self.variables)
 
@@ -71,8 +71,8 @@ class Device:
         output = []
         if not driver_ok or not self.driver_handler_ok:
             return output
-        if driver_ok and self.driver_handler_ok and self._h.inst is None:
-            self._h.connect()
+        #if driver_ok and self.driver_handler_ok and self._h.inst is None:
+        #    self._h.connect()
 
         for item in self.variables:
             if self.variables[item].id == variable_id:
@@ -81,5 +81,4 @@ class Device:
                 read_value = self._h.write_data(variable_id, value, task)
                 if read_value is not None and self.variables[item].update_value(read_value, time()):
                     output.append(self.variables[item].create_recorded_data_element())
-
         return output
