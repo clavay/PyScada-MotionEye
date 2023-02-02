@@ -12,7 +12,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-logging.debug("importing motioneye signals")
 
 @receiver(post_save, sender=MotionEyeServer)
 @receiver(post_save, sender=MotionEyeDevice)
