@@ -60,6 +60,15 @@ class MotionEyeVariableAdmin(VariableAdmin):
     ]
 
 
+class MotionEyeDeviceAdmin2(admin.ModelAdmin):
+    save_as = True
+    save_as_continue = True
+
+    def has_module_permission(self, request):
+        return False
+
+
 # admin_site.register(ExtendedMotionEyeDevice, MotionEyeDeviceAdmin)
 # admin_site.register(ExtendedMotionEyeVariable, MotionEyeVariableAdmin)
+admin_site.register(MotionEyeDevice, MotionEyeDeviceAdmin2)
 admin_site.register(MotionEyeServer)
