@@ -184,7 +184,7 @@ class GenericDevice(GenericHandlerDevice):
             admin_password = self._device.motioneyedevice.motioneye_server.admin_password
             surveillance_username = self._device.motioneyedevice.motioneye_server.surveillance_username
             surveillance_password = self._device.motioneyedevice.motioneye_server.surveillance_password
-            async with timeout(20) as tm:
+            async with timeout(10) as tm:
                 client = MotionEyeClient(url,
                                          admin_username,
                                          admin_password,
