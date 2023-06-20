@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('motioneye', '0002_add_device_protocol'),
+        ("motioneye", "0002_add_device_protocol"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='motioneyeserver',
-            name='admin_password',
-            field=models.CharField(blank=True, default='', max_length=50),
+            model_name="motioneyeserver",
+            name="admin_password",
+            field=models.CharField(blank=True, default="", max_length=50),
         ),
         migrations.AlterField(
-            model_name='motioneyeserver',
-            name='surveillance_password',
-            field=models.CharField(blank=True, default='', max_length=50),
+            model_name="motioneyeserver",
+            name="surveillance_password",
+            field=models.CharField(blank=True, default="", max_length=50),
         ),
     ]

@@ -15,6 +15,7 @@ from typing import Any
 from asgiref.sync import async_to_sync
 from async_timeout import timeout
 from asyncio import wait_for
+
 try:
     from asyncio.exceptions import TimeoutError as asyncioTimeoutError
     from asyncio.exceptions import CancelledError as asyncioCancelledError
@@ -29,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from motioneye_client.client import *
+
     driver_ok = True
 except ImportError:
     logger.error("Cannot import motioneye_client")
@@ -42,9 +44,17 @@ async def async_set_cameras_config(device, conf):
         admin_password = device.motioneye_server.admin_password
         surveillance_username = device.motioneye_server.surveillance_username
         surveillance_password = device.motioneye_server.surveillance_password
-        async with MotionEyeClient(url, admin_username, admin_password, surveillance_username, surveillance_password) as client:
+        async with MotionEyeClient(
+            url,
+            admin_username,
+            admin_password,
+            surveillance_username,
+            surveillance_password,
+        ) as client:
             try:
-                await wait_for(client.async_set_camera(device.camera_id, conf), timeout=5)
+                await wait_for(
+                    client.async_set_camera(device.camera_id, conf), timeout=5
+                )
             except (TimeoutError, asyncioTimeoutError):
                 logger.warning("Timeout for {}.".format(device))
     except MotionEyeClientInvalidAuthError:
@@ -67,7 +77,13 @@ async def async_do_action(device, camera_id, action):
         admin_password = device.motioneye_server.admin_password
         surveillance_username = device.motioneye_server.surveillance_username
         surveillance_password = device.motioneye_server.surveillance_password
-        async with MotionEyeClient(url, admin_username, admin_password, surveillance_username, surveillance_password) as client:
+        async with MotionEyeClient(
+            url,
+            admin_username,
+            admin_password,
+            surveillance_username,
+            surveillance_password,
+        ) as client:
             try:
                 await wait_for(client.async_action(camera_id, action), timeout=5)
             except (TimeoutError, asyncioTimeoutError):
@@ -111,7 +127,10 @@ class GenericDevice(GenericHandlerDevice):
         read values from the device
         """
         value = None
-        if self.camera_config is not None and variable_instance.motioneyevariable.service in self.camera_config:
+        if (
+            self.camera_config is not None
+            and variable_instance.motioneyevariable.service in self.camera_config
+        ):
             value = self.camera_config[variable_instance.motioneyevariable.service]
         return value
 
@@ -123,42 +142,75 @@ class GenericDevice(GenericHandlerDevice):
             for var in self._variables:
                 var = self._variables[var]
                 if variable_id == var.id:
-                    if self.camera_config is not None and var.motioneyevariable.service in self.camera_config:
+                    if (
+                        self.camera_config is not None
+                        and var.motioneyevariable.service in self.camera_config
+                    ):
                         # Config
-                        if var.value_class == 'BOOLEAN':
+                        if var.value_class == "BOOLEAN":
                             value = str(bool(value))
                         else:
                             for field in var.motioneyevariable.service_not_boolean:
-                                if re.compile(field, re.IGNORECASE).match(var.motioneyevariable.service):
-                                #if field in var.motioneyevariable.service:
-                                    value = str(var.motioneyevariable.service_not_boolean[field][int(value)][0])
+                                if re.compile(field, re.IGNORECASE).match(
+                                    var.motioneyevariable.service
+                                ):
+                                    # if field in var.motioneyevariable.service:
+                                    value = str(
+                                        var.motioneyevariable.service_not_boolean[
+                                            field
+                                        ][int(value)][0]
+                                    )
 
                                 # for custom text overlay
                                 if int(value) == 2:
-                                    if 'left' in var.motioneyevariable.service:
+                                    if "left" in var.motioneyevariable.service:
                                         try:
-                                            self.camera_config['custom_' + var.motioneyevariable.service] = str(var.variableproperty_set.get(name='text').value())
+                                            self.camera_config[
+                                                "custom_"
+                                                + var.motioneyevariable.service
+                                            ] = str(
+                                                var.variableproperty_set.get(
+                                                    name="text"
+                                                ).value()
+                                            )
                                         except VariableProperty.DoesNotExist:
-                                            logger.warning('VariableProperty named text does not exist '
-                                                           'for custom text overlay var id {}'.format(var.id))
+                                            logger.warning(
+                                                "VariableProperty named text does not exist "
+                                                "for custom text overlay var id {}".format(
+                                                    var.id
+                                                )
+                                            )
 
                         self.camera_config[var.motioneyevariable.service] = value
 
-                        async_to_sync(async_set_cameras_config)(var.device.motioneyedevice, self.camera_config)
-
+                        async_to_sync(async_set_cameras_config)(
+                            var.device.motioneyedevice, self.camera_config
+                        )
 
                         return value
                     else:
                         # Actions
                         for action in var.motioneyevariable.service_actions_choices:
                             if var.motioneyevariable.service == action[0]:
-                                value = async_to_sync(async_do_action)(var.device.motioneyedevice, var.device.motioneyedevice.camera_id, str(action[0]))
+                                value = async_to_sync(async_do_action)(
+                                    var.device.motioneyedevice,
+                                    var.device.motioneyedevice.camera_id,
+                                    str(action[0]),
+                                )
                                 return value
 
-                        logger.info('write {} failed for {}'.format(var.motioneyevariable.service, var.device))
+                        logger.info(
+                            "write {} failed for {}".format(
+                                var.motioneyevariable.service, var.device
+                            )
+                        )
                         return None
 
-            logger.warning('Variable {} not in variable list {} of device {}'.format(variable_id, self._variables, self._device))
+            logger.warning(
+                "Variable {} not in variable list {} of device {}".format(
+                    variable_id, self._variables, self._device
+                )
+            )
         return None
 
     async def async_get_cameras_config(self):
@@ -167,9 +219,14 @@ class GenericDevice(GenericHandlerDevice):
         self.camera_config = None
         try:
             self.inst = await self.async_query_motioneye_server()
-            if type(self.inst) == dict and 'cameras' in self.inst and type(self.inst['cameras']) == dict and 'cameras' in self.inst['cameras']:
-                for camera in self.inst['cameras']['cameras']:
-                    if camera['id'] == self._device.motioneyedevice.camera_id:
+            if (
+                type(self.inst) == dict
+                and "cameras" in self.inst
+                and type(self.inst["cameras"]) == dict
+                and "cameras" in self.inst["cameras"]
+            ):
+                for camera in self.inst["cameras"]["cameras"]:
+                    if camera["id"] == self._device.motioneyedevice.camera_id:
                         self.camera_config = camera
         except (TimeoutError, asyncioTimeoutError):
             self._not_accessible_reason = "Timeout"
@@ -180,16 +237,26 @@ class GenericDevice(GenericHandlerDevice):
     async def async_query_motioneye_server(self) -> dict[str, Any] or None:
         try:
             url = self._device.motioneyedevice.motioneye_server.url
-            admin_username = self._device.motioneyedevice.motioneye_server.admin_username
-            admin_password = self._device.motioneyedevice.motioneye_server.admin_password
-            surveillance_username = self._device.motioneyedevice.motioneye_server.surveillance_username
-            surveillance_password = self._device.motioneyedevice.motioneye_server.surveillance_password
+            admin_username = (
+                self._device.motioneyedevice.motioneye_server.admin_username
+            )
+            admin_password = (
+                self._device.motioneyedevice.motioneye_server.admin_password
+            )
+            surveillance_username = (
+                self._device.motioneyedevice.motioneye_server.surveillance_username
+            )
+            surveillance_password = (
+                self._device.motioneyedevice.motioneye_server.surveillance_password
+            )
             async with timeout(10) as tm:
-                client = MotionEyeClient(url,
-                                         admin_username,
-                                         admin_password,
-                                         surveillance_username,
-                                         surveillance_password)
+                client = MotionEyeClient(
+                    url,
+                    admin_username,
+                    admin_password,
+                    surveillance_username,
+                    surveillance_password,
+                )
                 try:
                     if not client:
                         self._not_accessible_reason = f"MotionEyeClient is {client}"
@@ -202,9 +269,9 @@ class GenericDevice(GenericHandlerDevice):
                     server_config = await client.async_get_server_config()
                     cameras = await client.async_get_cameras()
 
-                    resp['manifest'] = manifest
-                    resp['server_config'] = server_config
-                    resp['cameras'] = cameras
+                    resp["manifest"] = manifest
+                    resp["server_config"] = server_config
+                    resp["cameras"] = cameras
 
                     return resp
 
@@ -214,13 +281,23 @@ class GenericDevice(GenericHandlerDevice):
                     await client.async_client_close()
 
         except MotionEyeClientInvalidAuthError:
-            self._not_accessible_reason = f"Invalid motionEye authentication for {self._device.motioneyedevice}."
+            self._not_accessible_reason = (
+                f"Invalid motionEye authentication for {self._device.motioneyedevice}."
+            )
         except MotionEyeClientConnectionError:
-            self._not_accessible_reason = f"MotionEye connection failure for {self._device.motioneyedevice}."
+            self._not_accessible_reason = (
+                f"MotionEye connection failure for {self._device.motioneyedevice}."
+            )
         except MotionEyeClientRequestError:
-            self._not_accessible_reason = f"MotionEye request failure for {self._device.motioneyedevice}."
+            self._not_accessible_reason = (
+                f"MotionEye request failure for {self._device.motioneyedevice}."
+            )
         except MotionEyeClientURLParseError:
-            self._not_accessible_reason = f"Unable to parse the URL for {self._device.motioneyedevice}."
+            self._not_accessible_reason = (
+                f"Unable to parse the URL for {self._device.motioneyedevice}."
+            )
         except MotionEyeClientPathError:
-            self._not_accessible_reason = f"Invalid path provided for {self._device.motioneyedevice}."
+            self._not_accessible_reason = (
+                f"Invalid path provided for {self._device.motioneyedevice}."
+            )
         return None

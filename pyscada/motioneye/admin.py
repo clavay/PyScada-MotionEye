@@ -21,8 +21,8 @@ class MotionEyeDeviceAdminInline(admin.StackedInline):
 
 class MotionEyeDeviceAdmin(DeviceAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'protocol':
-            kwargs['queryset'] = DeviceProtocol.objects.filter(pk=PROTOCOL_ID)
+        if db_field.name == "protocol":
+            kwargs["queryset"] = DeviceProtocol.objects.filter(pk=PROTOCOL_ID)
             db_field.default = PROTOCOL_ID
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -31,9 +31,7 @@ class MotionEyeDeviceAdmin(DeviceAdmin):
         qs = super().get_queryset(request)
         return qs.filter(protocol_id=PROTOCOL_ID)
 
-    inlines = [
-        MotionEyeDeviceAdminInline
-    ]
+    inlines = [MotionEyeDeviceAdminInline]
 
 
 class MotionEyeVariableAdminInline(admin.StackedInline):
@@ -41,13 +39,25 @@ class MotionEyeVariableAdminInline(admin.StackedInline):
 
 
 class MotionEyeVariableAdmin(VariableAdmin):
-    list_display = ('id', 'name', 'description', 'unit', 'device_name', 'value_class', 'active', 'writeable')
-    list_editable = ('active', 'writeable',)
-    list_display_links = ('name',)
+    list_display = (
+        "id",
+        "name",
+        "description",
+        "unit",
+        "device_name",
+        "value_class",
+        "active",
+        "writeable",
+    )
+    list_editable = (
+        "active",
+        "writeable",
+    )
+    list_display_links = ("name",)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'device':
-            kwargs['queryset'] = Device.objects.filter(protocol=PROTOCOL_ID)
+        if db_field.name == "device":
+            kwargs["queryset"] = Device.objects.filter(protocol=PROTOCOL_ID)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_queryset(self, request):
@@ -55,9 +65,7 @@ class MotionEyeVariableAdmin(VariableAdmin):
         qs = super().get_queryset(request)
         return qs.filter(device__protocol_id=PROTOCOL_ID)
 
-    inlines = [
-        MotionEyeVariableAdminInline
-    ]
+    inlines = [MotionEyeVariableAdminInline]
 
 
 class MotionEyeDeviceAdmin2(admin.ModelAdmin):
