@@ -14,7 +14,7 @@ try:
 
     driver_ok = True
 except ImportError:
-    logger.error("Cannot import motioneye_client")
+    logger.error("Cannot import motioneye_client", exc_info=True)
     driver_ok = False
 
 
